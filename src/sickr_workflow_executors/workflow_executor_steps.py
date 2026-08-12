@@ -1129,6 +1129,8 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
     if dirty.returncode != 0:
         return ExecutorStepResult(step.executor_id, "error", "git.sync_with_base could not inspect worktree status", {**evidence, **dirty.evidence("status")})
     if dirty.stdout.strip():
+        if not delegate_conflicts:
+            return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base requires a clean worktree: " + _dirty_worktree_summary(dirty.stdout), {**evidence, "dirty_status": _truncate(dirty.stdout, 8192)})
         network_env = _git_network_environment(step=step, ctx=ctx, access="write", evidence=evidence)
         if isinstance(network_env, ExecutorStepResult):
             return network_env
@@ -1170,7 +1172,6 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
                     "delegation_reason": "retained_workspace_work",
                 },
             )
-        return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base requires a clean worktree: " + _dirty_worktree_summary(dirty.stdout), {**evidence, "dirty_status": _truncate(dirty.stdout, 8192)})
 
     network_env = _git_network_environment(step=step, ctx=ctx, access="write", evidence=evidence)
     if isinstance(network_env, ExecutorStepResult):
@@ -3396,7 +3397,12 @@ def _run_builtin_step_executor(
         "message": result.message,
         "evidence": result.evidence,
     }, sort_keys=True))
-    return _executor_result_from_protocol_output(step=step, output=output, base_evidence={}, nest_evidence=False)
+    return _executor_result_from_protocol_output(
+        step=step,
+        output=output,
+        base_evidence={"executor_transport": {"source_provenance": {"source": "sickr_default"}, "trusted_builtin": True}},
+        nest_evidence=False,
+    )
 
 
 def _bounded_timeout(value: Any) -> int | None:
