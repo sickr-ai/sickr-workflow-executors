@@ -463,7 +463,7 @@ def run_executor_steps(
                     break
             continue
         try:
-            results.append(executor(step=step, ctx=step_ctx, actor_result=actor_result))
+            results.append(_run_builtin_step_executor(executor=executor, step=step, ctx=step_ctx, actor_result=actor_result))
         except Exception as err:  # noqa: BLE001 - executor failure is evidence
             results.append(ExecutorStepResult(
                 step.executor_id,
@@ -1820,6 +1820,14 @@ def _github_publish_and_ensure_pr(*, step: ExecutorStep, ctx: ExecutorContext, a
     if repo.lower() != expected_repo.lower() or credential_base != base_branch or credential_head != target_branch:
         return ExecutorStepResult(step.executor_id, "error", "github.publish_and_ensure_pr credential scope does not match the ticket", evidence)
 
+    network_env = github_token_env(token=token, base_env=_controlled_env(ctx.env))
+    fetched = _git_step(["fetch", "--no-tags", "origin", base_branch], cwd=workdir, env=network_env, timeout=timeout)
+    if fetched.returncode != 0:
+        return ExecutorStepResult(step.executor_id, "failed", "github.publish_and_ensure_pr could not refresh the configured base branch", {**evidence, **fetched.evidence("base_fetch")})
+    contains_base = _git_step(["merge-base", "--is-ancestor", f"origin/{base_branch}", "HEAD"], cwd=workdir, env=ctx.env, timeout=timeout)
+    if contains_base.returncode != 0:
+        return ExecutorStepResult(step.executor_id, "failed", f"github.publish_and_ensure_pr requires the ticket branch to include current origin/{base_branch}; reconcile retained work before publishing", {**evidence, **contains_base.evidence("base_ancestry")})
+
     head = _git_step(["rev-parse", "HEAD"], cwd=workdir, env=ctx.env, timeout=timeout)
     head_sha = head.stdout.strip() if head.returncode == 0 else ""
     push_preconditions = {
@@ -1829,6 +1837,7 @@ def _github_publish_and_ensure_pr(*, step: ExecutorStep, ctx: ExecutorContext, a
         # credential; the branch either fast-forwards or the push is refused
         # by the remote (publish_ticket_branch never forces).
         "remote_fast_forward_or_absent": True,
+        "current_base_included": True,
     }
     push_decision = authorize_completion(
         "git.push_unpushed_branch",
@@ -3292,17 +3301,7 @@ def _run_script_step_executor(
     runtime_dir = ctx.workspace_root / ".sickr" / "runtime"
     runtime_dir.mkdir(parents=True, exist_ok=True)
     timeout = step.timeout_seconds or 600
-    payload = {
-        "schema_version": "sickr.executor.input.v1",
-        "executor_id": step.executor_id,
-        "executor_contract_version": step.executor_contract_version,
-        "ticket": ctx.ticket,
-        "workspace": {"path": str(ctx.workspace_root)},
-        "params": step.params,
-        "actor_result": actor_result,
-        "prior_step_results": list(ctx.prior_step_results),
-        "source_provenance": resolved.provenance,
-    }
+    payload = _executor_input_payload(step=step, ctx=ctx, actor_result=actor_result, source_provenance=resolved.provenance)
     with tempfile.TemporaryDirectory(prefix="executor-step-", dir=str(runtime_dir)) as tmp:
         tmp_path = Path(tmp)
         input_path = tmp_path / "input.json"
@@ -3336,18 +3335,56 @@ def _run_script_step_executor(
             output = json.loads(raw)
         except json.JSONDecodeError:
             return ExecutorStepResult(step.executor_id, "error", "executor output JSON is invalid", base_evidence)
-        if not isinstance(output, dict) or output.get("schema_version") != "sickr.executor.output.v1":
-            return ExecutorStepResult(step.executor_id, "error", "executor output schema_version must be sickr.executor.output.v1", base_evidence)
-        status = output.get("status")
-        if status not in {"passed", "failed", "error", "skipped"}:
-            return ExecutorStepResult(step.executor_id, "error", "executor status must be passed, failed, error, or skipped", base_evidence)
-        evidence = output.get("evidence") if isinstance(output.get("evidence"), dict) else {}
-        return ExecutorStepResult(
-            step.executor_id,
-            status,  # type: ignore[arg-type]
-            str(output.get("message") or "")[:4096],
-            {**base_evidence, "executor": evidence},
-        )
+        return _executor_result_from_protocol_output(step=step, output=output, base_evidence=base_evidence, nest_evidence=True)
+
+
+def _executor_input_payload(
+    *, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None,
+    source_provenance: dict[str, Any] | None,
+) -> dict[str, Any]:
+    return {
+        "schema_version": "sickr.executor.input.v1",
+        "executor_id": step.executor_id,
+        "executor_contract_version": step.executor_contract_version,
+        "ticket": ctx.ticket,
+        "workspace": {"path": str(ctx.workspace_root)},
+        "params": step.params,
+        "actor_result": actor_result,
+        "prior_step_results": list(ctx.prior_step_results),
+        "source_provenance": source_provenance,
+    }
+
+
+def _executor_result_from_protocol_output(
+    *, step: ExecutorStep, output: Any, base_evidence: dict[str, Any], nest_evidence: bool,
+) -> ExecutorStepResult:
+    if not isinstance(output, dict) or output.get("schema_version") != "sickr.executor.output.v1":
+        return ExecutorStepResult(step.executor_id, "error", "executor output schema_version must be sickr.executor.output.v1", base_evidence)
+    status = output.get("status")
+    if status not in {"passed", "failed", "error", "skipped"}:
+        return ExecutorStepResult(step.executor_id, "error", "executor status must be passed, failed, error, or skipped", base_evidence)
+    evidence = output.get("evidence") if isinstance(output.get("evidence"), dict) else {}
+    projected = {**base_evidence, "executor": evidence} if nest_evidence else {**base_evidence, **evidence}
+    return ExecutorStepResult(step.executor_id, status, str(output.get("message") or "")[:4096], projected)  # type: ignore[arg-type]
+
+
+def _run_builtin_step_executor(
+    *, executor: StepExecutor, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None,
+) -> ExecutorStepResult:
+    """Run bundled code through the same versioned envelope as repo code."""
+    payload = _executor_input_payload(step=step, ctx=ctx, actor_result=actor_result, source_provenance={"source": "sickr_default"})
+    try:
+        json.loads(json.dumps(payload, sort_keys=True))
+    except (TypeError, ValueError) as err:
+        return ExecutorStepResult(step.executor_id, "error", f"executor input is not JSON-compatible: {err}")
+    result = executor(step=step, ctx=ctx, actor_result=actor_result)
+    output = json.loads(json.dumps({
+        "schema_version": "sickr.executor.output.v1",
+        "status": result.status,
+        "message": result.message,
+        "evidence": result.evidence,
+    }, sort_keys=True))
+    return _executor_result_from_protocol_output(step=step, output=output, base_evidence={}, nest_evidence=False)
 
 
 def _bounded_timeout(value: Any) -> int | None:

@@ -6,6 +6,7 @@ from pathlib import Path
 from sickr_workflow_executors.executor_manifest import (
     BUILTIN_EXECUTOR_MANIFESTS,
     assert_registration_conformance,
+    builtin_executor_fixture,
 )
 from sickr_workflow_executors.workflow_executor_steps import DEFAULT_STEP_EXECUTORS
 
@@ -25,4 +26,4 @@ def test_every_handler_has_exactly_one_manifest() -> None:
 
 def test_committed_manifest_matches_runtime_registry() -> None:
     fixture = json.loads((Path(__file__).parents[1] / "manifests" / "builtin-executors.v1.json").read_text(encoding="utf-8"))
-    assert {item["id"] for item in fixture["executors"]} == set(BUILTIN_EXECUTOR_MANIFESTS)
+    assert fixture == builtin_executor_fixture()

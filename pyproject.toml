@@ -9,10 +9,15 @@ description = "Private, versioned SICKR workflow executor implementations."
 requires-python = ">=3.11"
 dependencies = []
 
+[project.optional-dependencies]
+# Implementations use the runtime SDK types supplied by the pinned host. The
+# orchestrator subtree build provides them directly; standalone development
+# can install the explicit compatible host extra.
+host = ["sickr==0.1.0"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "../sickr-orchestrator/src", "../sickr-orchestrator/tests"]
 testpaths = ["tests"]
-
