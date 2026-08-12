@@ -979,6 +979,14 @@ def _git_ensure_ticket_branch(*, step: ExecutorStep, ctx: ExecutorContext, actor
     if dirty.returncode != 0:
         return ExecutorStepResult(step.executor_id, "error", "git.ensure_ticket_branch could not inspect worktree status", {**evidence, **dirty.evidence("status")})
     if dirty.stdout.strip():
+        network_env = _git_network_environment(step=step, ctx=ctx, access="write", evidence=evidence)
+        if isinstance(network_env, ExecutorStepResult):
+            return network_env
+        fetched_base = _git_step(["fetch", "origin", f"{base_branch}:refs/remotes/origin/{base_branch}"], cwd=workdir, env=network_env, timeout=timeout)
+        if fetched_base.returncode != 0:
+            return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not refresh the configured base before delegation", {**evidence, **fetched_base.evidence("fetch_base")})
+        base_head = _git_step(["rev-parse", f"origin/{base_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+        evidence["required_base_sha"] = base_head.stdout.strip() if base_head.returncode == 0 else ""
         # Contract B: dirt is classified, not lumped. Untracked paths matching
         # the state's declared generated-artifact allowlist are swept — they
         # are build output a preceding ci.run_* step produced and the repo
@@ -3335,7 +3343,7 @@ def _run_script_step_executor(
             output = json.loads(raw)
         except json.JSONDecodeError:
             return ExecutorStepResult(step.executor_id, "error", "executor output JSON is invalid", base_evidence)
-        return _executor_result_from_protocol_output(step=step, output=output, base_evidence=base_evidence, nest_evidence=True)
+        return _executor_result_from_protocol_output(step=step, output=output, base_evidence={"executor_transport": base_evidence}, nest_evidence=False)
 
 
 def _executor_input_payload(
