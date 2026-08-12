@@ -979,14 +979,6 @@ def _git_ensure_ticket_branch(*, step: ExecutorStep, ctx: ExecutorContext, actor
     if dirty.returncode != 0:
         return ExecutorStepResult(step.executor_id, "error", "git.ensure_ticket_branch could not inspect worktree status", {**evidence, **dirty.evidence("status")})
     if dirty.stdout.strip():
-        network_env = _git_network_environment(step=step, ctx=ctx, access="write", evidence=evidence)
-        if isinstance(network_env, ExecutorStepResult):
-            return network_env
-        fetched_base = _git_step(["fetch", "origin", f"{base_branch}:refs/remotes/origin/{base_branch}"], cwd=workdir, env=network_env, timeout=timeout)
-        if fetched_base.returncode != 0:
-            return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not refresh the configured base before delegation", {**evidence, **fetched_base.evidence("fetch_base")})
-        base_head = _git_step(["rev-parse", f"origin/{base_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
-        evidence["required_base_sha"] = base_head.stdout.strip() if base_head.returncode == 0 else ""
         # Contract B: dirt is classified, not lumped. Untracked paths matching
         # the state's declared generated-artifact allowlist are swept — they
         # are build output a preceding ci.run_* step produced and the repo
@@ -1137,6 +1129,16 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
     if dirty.returncode != 0:
         return ExecutorStepResult(step.executor_id, "error", "git.sync_with_base could not inspect worktree status", {**evidence, **dirty.evidence("status")})
     if dirty.stdout.strip():
+        network_env = _git_network_environment(step=step, ctx=ctx, access="write", evidence=evidence)
+        if isinstance(network_env, ExecutorStepResult):
+            return network_env
+        fetched_base = _git_step(["fetch", "origin", f"{base_branch}:refs/remotes/origin/{base_branch}"], cwd=workdir, env=network_env, timeout=timeout)
+        if fetched_base.returncode != 0:
+            return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not refresh the configured base before delegation", {**evidence, **fetched_base.evidence("fetch_base")})
+        base_head = _git_step(["rev-parse", f"origin/{base_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+        if base_head.returncode != 0:
+            return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not resolve the configured base before delegation", {**evidence, **base_head.evidence("base_rev_parse")})
+        evidence["required_base_sha"] = base_head.stdout.strip()
         merge_head = _git_step(["rev-parse", "--verify", "MERGE_HEAD"], cwd=workdir, env=ctx.env, timeout=timeout)
         rebase_head = _git_step(["rev-parse", "--verify", "REBASE_HEAD"], cwd=workdir, env=ctx.env, timeout=timeout)
         reconciliation_in_progress = merge_head.returncode == 0 or rebase_head.returncode == 0
@@ -3372,7 +3374,9 @@ def _executor_result_from_protocol_output(
     if status not in {"passed", "failed", "error", "skipped"}:
         return ExecutorStepResult(step.executor_id, "error", "executor status must be passed, failed, error, or skipped", base_evidence)
     evidence = output.get("evidence") if isinstance(output.get("evidence"), dict) else {}
-    projected = {**base_evidence, "executor": evidence} if nest_evidence else {**base_evidence, **evidence}
+    if "executor_transport" in evidence:
+        return ExecutorStepResult(step.executor_id, "error", "executor evidence uses reserved key executor_transport", base_evidence)
+    projected = {**base_evidence, "executor": evidence} if nest_evidence else {**evidence, **base_evidence}
     return ExecutorStepResult(step.executor_id, status, str(output.get("message") or "")[:4096], projected)  # type: ignore[arg-type]
 
 
