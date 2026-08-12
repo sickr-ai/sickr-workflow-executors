@@ -80,7 +80,23 @@ def build_deterministic_main_executor(
         registrations=operations,
         registration_name="deterministic main operations",
     )
-    return DeterministicMainExecutor(operations)
+    return DeterministicMainExecutor(operations, external_operation=_external_executor_main)
+
+
+def _external_executor_main(*, spec: dict[str, Any], ctx: ExecutorContext) -> MainExecutorResult:
+    outcome, results = run_executor_steps(config_json={"steps": [{
+        "executor_id": spec.get("operation_id"),
+        "executor_contract_version": spec.get("executor_contract_version"),
+        "source": spec.get("executor_source"),
+        "params": spec.get("params") if isinstance(spec.get("params"), dict) else {},
+        "timeout_seconds": spec.get("timeout_seconds"),
+        "required": True,
+        "on_failure": "fail",
+    }]}, ctx=ctx)
+    result = results[0] if results else None
+    if outcome in {"passed", "skipped"} and result is not None:
+        return MainExecutorResult(status="completed", evidence=result.evidence)
+    return MainExecutorResult(status="failed", evidence=result.evidence if result is not None else {}, failure_reason=result.message if result is not None else "external executor produced no result")
 
 
 def _runtime_noop(*, spec: dict[str, Any], ctx: ExecutorContext) -> MainExecutorResult:
