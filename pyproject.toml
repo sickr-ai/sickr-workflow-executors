@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sickr-workflow-executors"
+version = "0.1.0"
+description = "Private, versioned SICKR workflow executor implementations."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "../sickr-orchestrator/src", "../sickr-orchestrator/tests"]
+testpaths = ["tests"]
+

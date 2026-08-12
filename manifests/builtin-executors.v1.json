@@ -1,0 +1,2407 @@
+{
+  "schema_version": "sickr.builtin_executor_manifest.v1",
+  "executors": [
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "actor.completed",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Evidence",
+      "kind": "evidence",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/actor.completed"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "channel.require",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Channels",
+      "kind": "evidence",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string"
+          },
+          "root": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/channel.require"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ci.run_build",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Validation",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 1200,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ci.run_build"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ci.run_command",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Validation",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "step_name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "step_name"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "step_name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 900,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ci.run_command"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ci.run_tests",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Validation",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 900,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ci.run_tests"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ci.run_typecheck",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Validation",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 900,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ci.run_typecheck"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "create_tickets_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticketing",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "created_tickets": {
+            "type": "array"
+          },
+          "created_ticket_ids": {
+            "type": "array"
+          },
+          "node_outcome": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/create_tickets_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "evidence.has_any",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Evidence",
+      "kind": "evidence",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "paths"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "matched_path": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/evidence.has_any"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "executor_steps_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Composition",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "config_json": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array"
+          },
+          "node_outcome": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/executor_steps_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "git.commit_state_changes",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Repository",
+      "kind": "action",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "working_directory": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "committed": {
+            "type": "boolean"
+          },
+          "head_sha": {
+            "type": "string"
+          },
+          "changed_status": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/git.commit_state_changes"
+      },
+      "requires": {
+        "connections": [],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "git.ensure_published",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Repository",
+      "kind": "action",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "current_branch": {
+            "type": "string"
+          },
+          "head_sha": {
+            "type": "string"
+          },
+          "remote_head_sha": {
+            "type": "string"
+          },
+          "pushed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/git.ensure_published"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "git.ensure_ticket_branch",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Repository",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "before_head_sha": {
+            "type": "string"
+          },
+          "after_head_sha": {
+            "type": "string"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "fast_forwarded": {
+            "type": "boolean"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/git.ensure_ticket_branch"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "git.sync_with_base",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Repository",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "rebase"
+            ]
+          },
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "before_head_sha": {
+            "type": "string"
+          },
+          "base_sha": {
+            "type": "string"
+          },
+          "after_head_sha": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "boolean"
+          },
+          "failure_stage": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/git.sync_with_base"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "github.ensure_deployed",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Deployment",
+      "kind": "check",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "health_url": {
+            "type": "string"
+          },
+          "commit_field": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "poll_seconds": {
+            "type": "integer"
+          },
+          "poll_interval_seconds": {
+            "type": "integer"
+          },
+          "retrigger": {
+            "type": "boolean"
+          },
+          "probe_timeout_seconds": {
+            "type": "integer"
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "health_url"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "expected_sha": {
+            "type": "string"
+          },
+          "deployed_sha": {
+            "type": "string"
+          },
+          "retriggered": {
+            "type": "boolean"
+          },
+          "poll_attempts": {
+            "type": "integer"
+          }
+        }
+      },
+      "default_timeout_seconds": 1800,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/github.ensure_deployed"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "github.prepare_pr_workspace",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string"
+          },
+          "pr_url": {
+            "type": "string"
+          },
+          "pr_number": {
+            "type": "integer"
+          },
+          "base_branch": {
+            "type": "string"
+          },
+          "base_sha": {
+            "type": "string"
+          },
+          "head_branch": {
+            "type": "string"
+          },
+          "head_sha": {
+            "type": "string"
+          },
+          "merge_base_sha": {
+            "type": "string"
+          },
+          "diff_range": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/github.prepare_pr_workspace"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "gh",
+          "git"
+        ],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "github.publish_and_ensure_pr",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "action",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "working_directory": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string"
+          },
+          "base_branch": {
+            "type": "string"
+          },
+          "target_branch": {
+            "type": "string"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "pr_url": {
+            "type": "string"
+          },
+          "pr_number": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/github.publish_and_ensure_pr"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "github.sync_review_decision",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "action",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string"
+          },
+          "pr_number": {
+            "type": "integer"
+          },
+          "pr_url": {
+            "type": "string"
+          },
+          "sickr_review_decision": {
+            "type": "string"
+          },
+          "requested_github_review_event": {
+            "type": "string"
+          },
+          "github_review_event": {
+            "type": "string"
+          },
+          "delivery_mode": {
+            "type": "string"
+          },
+          "formal_review": {
+            "type": "boolean"
+          },
+          "review_url": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/github.sync_review_decision"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "integration.dispatch",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Integrations",
+      "kind": "notification",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "provider",
+          "action"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "slack_channel_id": {
+            "type": "string"
+          },
+          "slack_message_ts": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/integration.dispatch"
+      },
+      "requires": {
+        "connections": [
+          "integration"
+        ],
+        "tools": [],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "package.install_dependencies",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Setup",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 1200,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/package.install_dependencies"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "pr.approved",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "reviewDecision": {
+            "type": "string"
+          },
+          "reviews": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/pr.approved"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "gh"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "pr.checks_green",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "check",
+      "supported_phases": [
+        "preflight",
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "wait_timeout_seconds": {
+            "type": "integer"
+          },
+          "poll_interval_seconds": {
+            "type": "integer"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "statusCheckRollup": {
+            "type": "array"
+          },
+          "waited_for_checks": {
+            "type": "boolean"
+          }
+        }
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/pr.checks_green"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "gh"
+        ],
+        "partial": true
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "pr.extract_context",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "evidence",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "pr": {
+            "type": "object"
+          },
+          "pr_links": {
+            "type": "array"
+          },
+          "implementation_author": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/pr.extract_context"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "gh"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "pr.mergeable",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Pull Request",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "mergeStateStatus": {
+            "type": "string"
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/pr.mergeable"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "gh"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "records.normalize_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Records",
+      "kind": "transform",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "input_path": {
+            "type": "string"
+          },
+          "field_mapping": {
+            "type": "object"
+          },
+          "required_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dedupe_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "input_path"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array"
+          },
+          "rejected_records": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/records.normalize_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "records.rank_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Records",
+      "kind": "transform",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "input_path": {
+            "type": "string"
+          },
+          "criteria": {
+            "type": "array"
+          },
+          "tie_breakers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "input_path",
+          "criteria"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ranked_records": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/records.rank_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "records.select_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Records",
+      "kind": "transform",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "input_path": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "minimum_score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "input_path",
+          "limit",
+          "minimum_score"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "selected_records": {
+            "type": "array"
+          },
+          "empty_result": {
+            "type": "boolean"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/records.select_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "remediation.spawn_tickets",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticketing",
+      "kind": "action",
+      "supported_phases": [
+        "postflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "spawn_status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "READY"
+            ]
+          },
+          "max_cycles": {
+            "type": "integer"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "remediation": {
+            "type": "object"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/remediation.spawn_tickets"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "runtime.noop",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Runtime",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "default_timeout_seconds": 30,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/runtime.noop"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "script_worker_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Custom code",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "configured_code_source": {
+            "type": "object"
+          },
+          "effective_code_source": {
+            "type": "object"
+          },
+          "config_json": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "node_outcome": {
+            "type": "string"
+          },
+          "source_provenance": {
+            "type": "object"
+          }
+        }
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/script_worker_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ship_pipeline_v1",
+      "executor_contract_version": 2,
+      "domain_id": "software-engineering",
+      "category": "Delivery",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "merge": {
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "completed",
+                      "block_merge",
+                      "deploy_failed",
+                      "deploy_infra_failed",
+                      "pdc_failed",
+                      "unknown"
+                    ]
+                  },
+                  "merge_commit": {
+                    "type": "string"
+                  },
+                  "final_stage": {
+                    "type": "string"
+                  },
+                  "governance_exceptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "outcome",
+                  "final_stage"
+                ]
+              }
+            },
+            "required": [
+              "merge"
+            ]
+          },
+          "ship_report": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "evidence"
+        ],
+        "x-sickr-output-channels": [
+          {
+            "canonical_path": "evidence.merge.outcome",
+            "label": "Merge outcome",
+            "description": "Final deterministic disposition of the shipping pipeline.",
+            "value_type": "enum",
+            "enum_values": [
+              "completed",
+              "block_merge",
+              "deploy_failed",
+              "deploy_infra_failed",
+              "pdc_failed",
+              "unknown"
+            ],
+            "required": true,
+            "routing": [
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "completed"
+                },
+                "outcome": "success"
+              },
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "block_merge"
+                },
+                "outcome": "failure"
+              },
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "deploy_failed"
+                },
+                "outcome": "failure"
+              },
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "deploy_infra_failed"
+                },
+                "outcome": "error"
+              },
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "pdc_failed"
+                },
+                "outcome": "failure"
+              },
+              {
+                "predicate": {
+                  "operator": "equals",
+                  "value": "unknown"
+                },
+                "outcome": "error"
+              }
+            ]
+          },
+          {
+            "canonical_path": "evidence.merge.merge_commit",
+            "label": "Merge commit",
+            "description": "Commit produced by the merge, when available.",
+            "value_type": "string",
+            "required": false,
+            "routing": []
+          },
+          {
+            "canonical_path": "evidence.merge.final_stage",
+            "label": "Final shipping stage",
+            "description": "Last stage reached by the deterministic shipping pipeline.",
+            "value_type": "string",
+            "required": true,
+            "routing": []
+          },
+          {
+            "canonical_path": "evidence.merge.governance_exceptions",
+            "label": "Governance exceptions",
+            "description": "Controls that could not be re-evaluated because the pull request was already merged.",
+            "value_type": "array",
+            "constraints": {
+              "items": {
+                "type": "string"
+              }
+            },
+            "required": false,
+            "routing": []
+          }
+        ]
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": true,
+        "level": "high",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/ship_pipeline_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "signals.ingest_ops_v1",
+      "executor_contract_version": 1,
+      "domain_id": "executive-intelligence",
+      "category": "Signals",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "input_path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_path"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ops_signal_radar_ingest": {
+            "type": "object"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/signals.ingest_ops_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "skip_validation_v1",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Control",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "skip_validation_outcome": {
+            "type": "string"
+          },
+          "skip_validation_reason": {
+            "type": "string"
+          },
+          "node_outcome": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 600,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://operations/skip_validation_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "sources.collect_v1",
+      "executor_contract_version": 1,
+      "domain_id": "executive-intelligence",
+      "category": "Research",
+      "kind": "action",
+      "supported_phases": [
+        "main"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "provider_id": {
+            "type": "string"
+          },
+          "query": {
+            "type": "object"
+          },
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "provider_id",
+          "query",
+          "limit"
+        ]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "source_records": {
+            "type": "array"
+          },
+          "provider_evidence": {
+            "type": "object"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "medium",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/sources.collect_v1"
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_acceptance_criteria",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_acceptance_criteria"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_branch",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_branch"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_description",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "length": {
+            "type": "integer"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_description"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_priority",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_priority"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_repo",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string"
+          },
+          "repo_url": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_repo"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "ticket.has_workflow",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Ticket context",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "workflow_template_id": {
+            "type": "string"
+          },
+          "workflow_node_id": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/ticket.has_workflow"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "validation.run_baseline",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Setup",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "commands": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 1200,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/validation.run_baseline"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "workspace.capture_generated_ignores",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Setup",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "excluded_paths": {
+            "type": "array"
+          },
+          "exclude_file": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": true,
+        "level": "low",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/workspace.capture_generated_ignores"
+      },
+      "requires": {
+        "connections": [],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "workspace.clone_repositories",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Setup",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "workspace_path": {
+            "type": "string"
+          },
+          "remote_url": {
+            "type": "string"
+          },
+          "cloned": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "type": "array"
+          }
+        }
+      },
+      "default_timeout_seconds": 300,
+      "risk": {
+        "mutating": true,
+        "level": "medium",
+        "requires_workspace": false
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/workspace.clone_repositories"
+      },
+      "requires": {
+        "connections": [
+          "github"
+        ],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
+      "id": "workspace.exists",
+      "executor_contract_version": 1,
+      "domain_id": "core",
+      "category": "Repository",
+      "kind": "check",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 120,
+      "risk": {
+        "mutating": false,
+        "level": "low",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/workspace.exists"
+      },
+      "requires": {
+        "connections": [],
+        "tools": []
+      }
+    }
+  ]
+}
