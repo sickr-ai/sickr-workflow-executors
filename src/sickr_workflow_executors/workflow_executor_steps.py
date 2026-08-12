@@ -423,9 +423,14 @@ def run_executor_steps(
             if _step_result_blocks_following_steps(step, setup_error):
                 break
             continue
-        executor = executors.get(step.executor_id)
+        src_kind = step.source.get("source") if isinstance(step.source, dict) else None
+        # Source identity is part of the pinned step contract. An organization
+        # or team installation may intentionally reuse a SICKR logical id; in
+        # that case its pinned repository implementation must win over the
+        # bundled handler. Falling back by id here would make overrides appear
+        # valid in the catalog while silently executing different code.
+        executor = None if src_kind == "org_repo" else executors.get(step.executor_id)
         if executor is None:
-            src_kind = step.source.get("source") if isinstance(step.source, dict) else None
             if src_kind in {"org_repo", "sickr_default"}:
                 # A materializable external/script source — resolve + run it.
                 results.append(_run_script_step_executor(step=step, ctx=step_ctx, actor_result=actor_result))
