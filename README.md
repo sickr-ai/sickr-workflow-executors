@@ -1,6 +1,6 @@
 # SICKR workflow executors
 
-This private repository is the release source for SICKR-maintained workflow
+This public repository is the release source for SICKR-maintained workflow
 executors. The orchestrator pins this repository as a squashed Git subtree and bundles the
 package into its private runtime artifact.
 The current implementation library targets the `sickr==0.1.0` host SDK; that
@@ -19,3 +19,17 @@ adapter and the same manifest conformance gate.
 Updates are additive contract versions. A released workflow remains pinned to
 the version it was published with. Removing an executor from the current
 library never rewrites an existing workflow binding.
+
+## Public-library validation phase
+
+Organizations can import the pinned public manifest into their executor
+catalog. Those organization-owned installations are deliberately marked as
+public-library mirrors. They are visible and lifecycle-managed, but cannot be
+attached to a workflow until the isolated runtime cutover. This validates
+repository discovery, contract comparison, organization ownership, immutable
+version pinning and retirement without changing production execution.
+
+The later isolated-runtime cutover will replace that mirror transport with
+repository entrypoints under the same manifest and installation identities.
+Until then, the catalog must not represent these mirrors as isolated customer
+scripts.
