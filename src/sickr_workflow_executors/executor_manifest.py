@@ -1179,7 +1179,7 @@ BUILTIN_EXECUTOR_MANIFESTS = build_executor_manifest_registry(
         ),
         ExecutorManifestDescriptor(
             id="integration.dispatch",
-            executor_contract_version=1,
+            executor_contract_version=2,
             domain_id="core",
             category="Integrations",
             kind="notification",
@@ -1187,8 +1187,27 @@ BUILTIN_EXECUTOR_MANIFESTS = build_executor_manifest_registry(
             parameter_schema={
                 "type": "object",
                 "properties": {
-                    "provider": {"type": "string"},
-                    "action": {"type": "string"},
+                    "provider": {
+                        "type": "string",
+                        "title": "Provider",
+                        "x_sickr_ui": {
+                            "control": "select",
+                            "allow_custom": True,
+                            "options": {"source": "integration.providers"},
+                        },
+                    },
+                    "action": {
+                        "type": "string",
+                        "title": "Action",
+                        "x_sickr_ui": {
+                            "control": "select",
+                            "allow_custom": True,
+                            "options": {
+                                "source": "integration.actions",
+                                "parameters": {"provider": "$params.provider"},
+                            },
+                        },
+                    },
                     "payload": {"type": "object"},
                 },
                 "required": ["provider", "action"],

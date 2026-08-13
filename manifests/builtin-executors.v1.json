@@ -1078,7 +1078,7 @@
     {
       "schema_version": "sickr.executor_manifest.v1",
       "id": "integration.dispatch",
-      "executor_contract_version": 1,
+      "executor_contract_version": 2,
       "domain_id": "core",
       "category": "Integrations",
       "kind": "notification",
@@ -1090,10 +1090,29 @@
         "type": "object",
         "properties": {
           "provider": {
-            "type": "string"
+            "type": "string",
+            "title": "Provider",
+            "x_sickr_ui": {
+              "control": "select",
+              "allow_custom": true,
+              "options": {
+                "source": "integration.providers"
+              }
+            }
           },
           "action": {
-            "type": "string"
+            "type": "string",
+            "title": "Action",
+            "x_sickr_ui": {
+              "control": "select",
+              "allow_custom": true,
+              "options": {
+                "source": "integration.actions",
+                "parameters": {
+                  "provider": "$params.provider"
+                }
+              }
+            }
           },
           "payload": {
             "type": "object"
