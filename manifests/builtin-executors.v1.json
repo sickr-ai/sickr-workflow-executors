@@ -745,6 +745,9 @@
           "base_sha": {
             "type": "string"
           },
+          "required_base_sha": {
+            "type": "string"
+          },
           "after_head_sha": {
             "type": "string"
           },

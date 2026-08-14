@@ -18,7 +18,7 @@ from typing import Any, Iterable, Literal, Mapping
 EXECUTOR_MANIFEST_SCHEMA_VERSION = "sickr.executor_manifest.v1"
 BUILTIN_EXECUTOR_FIXTURE_SCHEMA_VERSION = "sickr.builtin_executor_manifest.v1"
 EXPECTED_BUILTIN_EXECUTOR_FIXTURE_SHA256 = (
-    "d7b5c9cfb93e487a02accb481557b2f735d3ba7182263f558d6e00bec1ca4536"
+    "1a86cb4de5ef20feeece603a8a8785982bc1676a2ce21083bb2da6b794979c67"
 )
 
 ExecutorPhase = Literal["preflight", "main", "postflight"]
@@ -911,6 +911,7 @@ BUILTIN_EXECUTOR_MANIFESTS = build_executor_manifest_registry(
                     "target_branch": {"type": "string"},
                     "before_head_sha": {"type": "string"},
                     "base_sha": {"type": "string"},
+                    "required_base_sha": {"type": "string"},
                     "after_head_sha": {"type": "string"},
                     "updated": {"type": "boolean"},
                     "failure_stage": {"type": "string"},

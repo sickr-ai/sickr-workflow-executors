@@ -1207,7 +1207,16 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
         return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not resolve branch SHAs", {**evidence, **before.evidence("target_rev_parse"), **base.evidence("base_rev_parse")})
     before_sha = before.stdout.strip()
     base_sha = base.stdout.strip()
-    evidence.update({"before_head_sha": before_sha, "base_sha": base_sha})
+    evidence.update({
+        "before_head_sha": before_sha,
+        "base_sha": base_sha,
+        # Any conflict produced below is delegated to Main. The common
+        # execution-contract verifier must compare the reconciled branch to
+        # the exact base revision observed by this preflight, not to a moving
+        # branch name. Keep this field present on both initially-dirty and
+        # initially-clean delegation paths.
+        "required_base_sha": base_sha,
+    })
 
     contains_base = _git_step(["merge-base", "--is-ancestor", f"origin/{base_branch}", f"origin/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
     if contains_base.returncode == 0:
