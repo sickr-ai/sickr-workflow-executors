@@ -1177,7 +1177,8 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
     if isinstance(network_env, ExecutorStepResult):
         return network_env
 
-    for branch, stage in ((target_branch, "fetch_target"), (base_branch, "fetch_base")):
+    remote_target_exists = False
+    for branch, stage in ((base_branch, "fetch_base"), (target_branch, "fetch_target")):
         fetched = _git_step(["fetch", "origin", f"{branch}:refs/remotes/origin/{branch}"], cwd=workdir, env=network_env, timeout=timeout)
         if (
             fetched.returncode != 0
@@ -1197,11 +1198,29 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
             network_env = refreshed_env
             fetched = _git_step(["fetch", "origin", f"{branch}:refs/remotes/origin/{branch}"], cwd=workdir, env=network_env, timeout=timeout)
             evidence["credential_refresh_succeeded"] = fetched.returncode == 0
+        if stage == "fetch_target" and fetched.returncode != 0 and _git_remote_ref_missing(fetched):
+            # A ticket branch is deliberately local-only until successful work
+            # is published. Its absence on origin is therefore the normal
+            # first-Setup case, not a synchronization failure.
+            evidence.update({"remote_existed": False, **fetched.evidence(stage)})
+            continue
         if fetched.returncode != 0:
             status: StepStatus = "error" if _is_github_auth_error(fetched.stderr) else "failed"
             return ExecutorStepResult(step.executor_id, status, f"git.sync_with_base failed to fetch {branch}", {**evidence, "failure_stage": stage, **fetched.evidence(stage)})
+        if stage == "fetch_target":
+            remote_target_exists = True
+            evidence["remote_existed"] = True
 
-    before = _git_step(["rev-parse", f"origin/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+    local_ref = _git_step(["rev-parse", "--verify", f"refs/heads/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+    if local_ref.returncode != 0 and not remote_target_exists:
+        return ExecutorStepResult(
+            step.executor_id,
+            "failed",
+            "git.sync_with_base could not resolve a local or remote ticket branch",
+            {**evidence, **local_ref.evidence("local_target_rev_parse")},
+        )
+    target_ref = f"origin/{target_branch}" if remote_target_exists else f"refs/heads/{target_branch}"
+    before = _git_step(["rev-parse", target_ref], cwd=workdir, env=ctx.env, timeout=timeout)
     base = _git_step(["rev-parse", f"origin/{base_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
     if before.returncode != 0 or base.returncode != 0:
         return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not resolve branch SHAs", {**evidence, **before.evidence("target_rev_parse"), **base.evidence("base_rev_parse")})
@@ -1218,7 +1237,7 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
         "required_base_sha": base_sha,
     })
 
-    contains_base = _git_step(["merge-base", "--is-ancestor", f"origin/{base_branch}", f"origin/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+    contains_base = _git_step(["merge-base", "--is-ancestor", f"origin/{base_branch}", target_ref], cwd=workdir, env=ctx.env, timeout=timeout)
     if contains_base.returncode == 0:
         return ExecutorStepResult(step.executor_id, "passed", "ticket branch already contains base branch", {**evidence, "after_head_sha": before_sha, "updated": False})
 
@@ -1228,17 +1247,17 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
     # failure between the two (a dirty worktree, a failed check) leaves the work
     # local-only — and the next attempt's sync then threw it away. Check out the
     # existing branch instead and let the merge/rebase below carry base into it.
-    local_ref = _git_step(["rev-parse", "--verify", f"refs/heads/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
     unpushed = 0
     if local_ref.returncode == 0:
-        counted = _git_step(["rev-list", "--count", f"origin/{target_branch}..{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
+        comparison_ref = f"origin/{target_branch}" if remote_target_exists else f"origin/{base_branch}"
+        counted = _git_step(["rev-list", "--count", f"{comparison_ref}..{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
         if counted.returncode == 0:
             try:
                 unpushed = int(counted.stdout.strip() or "0")
             except ValueError:
                 unpushed = 0
     evidence["unpushed_local_commits"] = unpushed
-    if unpushed > 0:
+    if local_ref.returncode == 0:
         checkout = _git_step(["checkout", target_branch], cwd=workdir, env=ctx.env, timeout=timeout)
     else:
         checkout = _git_step(["checkout", "-B", target_branch, f"origin/{target_branch}"], cwd=workdir, env=ctx.env, timeout=timeout)
@@ -1285,6 +1304,18 @@ def _git_sync_with_base(*, step: ExecutorStep, ctx: ExecutorContext, actor_resul
     if after.returncode != 0:
         return ExecutorStepResult(step.executor_id, "error", "git.sync_with_base could not resolve updated HEAD", {**evidence, **after.evidence("after_rev_parse")})
     after_sha = after.stdout.strip()
+    if str(ctx.ticket.get("governance_state_type") or "").strip().lower() == "setup":
+        return ExecutorStepResult(
+            step.executor_id,
+            "passed",
+            "ticket branch synchronized with base locally",
+            {
+                **evidence,
+                "after_head_sha": after_sha,
+                "updated": after_sha != before_sha,
+                "published": False,
+            },
+        )
     push = _git_step(["push", "origin", f"HEAD:{target_branch}"], cwd=workdir, env=network_env, timeout=timeout)
     if push.returncode != 0:
         return ExecutorStepResult(step.executor_id, "failed", "git.sync_with_base could not push updated ticket branch", {**evidence, "after_head_sha": after_sha, "failure_stage": "push", **push.evidence("push")})
