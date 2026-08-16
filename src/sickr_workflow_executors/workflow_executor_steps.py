@@ -1535,6 +1535,22 @@ def _package_install_dependencies(*, step: ExecutorStep, ctx: ExecutorContext, a
     return replace(result, evidence={**result.evidence, "dependency_root": str(package_root), "discovery": discovery})
 
 
+def _github_repository_access_failure(result: GitStepResult) -> bool:
+    """Classify GitHub's intentionally ambiguous private-repository failures."""
+    if result.returncode == 0:
+        return False
+    diagnostic = f"{result.stderr}\n{result.stdout}".casefold()
+    return any(
+        marker in diagnostic
+        for marker in (
+            "repository not found",
+            "authentication failed",
+            "could not read username",
+            "permission denied",
+        )
+    )
+
+
 def _workspace_clone_repositories(*, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None) -> ExecutorStepResult:
     """Materialize the primary ticket repository in its allocated workspace."""
     del actor_result
@@ -1632,7 +1648,19 @@ def _workspace_clone_repositories(*, step: ExecutorStep, ctx: ExecutorContext, a
         if not existed:
             cloned = _git_step(["clone", "--no-checkout", url, str(target)], cwd=target.parent, env=credential.env, timeout=_bounded_timeout(step.timeout_seconds) or 300)
             if cloned.returncode != 0:
-                return ExecutorStepResult(step.executor_id, "failed", f"workspace.clone_repositories could not clone {slug}", {**cloned.evidence("git_clone"), "repo": slug, "repositories": records})
+                evidence = {**cloned.evidence("git_clone"), "repo": slug, "repositories": records}
+                if _github_repository_access_failure(cloned):
+                    return ExecutorStepResult(
+                        step.executor_id,
+                        "failed",
+                        f"GitHub access to {slug} could not be confirmed. Refresh the repository connection, then retry Setup.",
+                        {
+                            **evidence,
+                            "failure_kind": "github_repository_access_unavailable",
+                            "recovery_action": "refresh_repository_connection",
+                        },
+                    )
+                return ExecutorStepResult(step.executor_id, "failed", f"workspace.clone_repositories could not clone {slug}", evidence)
             # Real Git creates these; explicit creation keeps injected command
             # runners and filesystem-backed tests faithful to the next steps.
             (target / ".git").mkdir(parents=True, exist_ok=True)
