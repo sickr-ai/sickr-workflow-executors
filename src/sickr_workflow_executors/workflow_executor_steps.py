@@ -1451,29 +1451,88 @@ def _git_ensure_published(*, step: ExecutorStep, ctx: ExecutorContext, actor_res
     )
 
 
+_DEPENDENCY_INSTALL_MARKERS: tuple[tuple[str, str], ...] = (
+    ("pnpm-lock.yaml", "pnpm install --frozen-lockfile"),
+    ("yarn.lock", "yarn install --frozen-lockfile"),
+    ("package-lock.json", "npm ci"),
+    ("uv.lock", "uv sync --frozen"),
+    ("poetry.lock", "poetry install --no-interaction"),
+    ("requirements.txt", f'"{sys.executable}" -m pip install -r requirements.txt'),
+)
+_DEPENDENCY_DISCOVERY_IGNORES = frozenset({
+    ".git", ".hg", ".svn", ".tox", ".venv", "__pycache__", "node_modules", "vendor",
+})
+
+
+def _dependency_install_command(directory: Path) -> str | None:
+    for marker, command in _DEPENDENCY_INSTALL_MARKERS:
+        if (directory / marker).is_file():
+            return command
+    return None
+
+
+def _nested_dependency_roots(repository_root: Path, *, max_depth: int = 3) -> list[tuple[Path, str]]:
+    discovered: list[tuple[Path, str]] = []
+    for current_raw, directory_names, _file_names in os.walk(repository_root):
+        current = Path(current_raw)
+        relative = current.relative_to(repository_root)
+        directory_names[:] = sorted(
+            name for name in directory_names
+            if name not in _DEPENDENCY_DISCOVERY_IGNORES and not name.startswith(".")
+        )
+        if len(relative.parts) >= max_depth:
+            directory_names.clear()
+        if current == repository_root:
+            continue
+        command = _dependency_install_command(current)
+        if command:
+            discovered.append((current, command))
+            # A package manager rooted here owns its descendants. Do not also
+            # infer fixture/example locks nested below the same package root.
+            directory_names.clear()
+    return sorted(discovered, key=lambda item: item[0].relative_to(repository_root).as_posix())
+
+
 def _package_install_dependencies(*, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None) -> ExecutorStepResult:
-    """Install from the repository's lockfile, unless commands are explicit."""
+    """Install from the repository's package-manager root.
+
+    An explicit command or working directory remains authoritative. Without an
+    override, a root lockfile wins. If the repository root is only a wrapper,
+    one uniquely discovered nested package root is safe to infer. Multiple
+    independent roots fail closed so Setup never installs an arbitrary package.
+    """
     if _ci_commands(step.params):
         return _ci_run_command(step=step, ctx=ctx, command_kind="dependency_install", default_timeout=1200)
     workdir = _ci_working_directory(ctx, step.params.get("working_directory"))
     if workdir is None or not workdir.is_dir():
         return ExecutorStepResult(step.executor_id, "error", "package.install_dependencies requires a repository workspace")
-    command = None
-    for marker, candidate in (
-        ("pnpm-lock.yaml", "pnpm install --frozen-lockfile"),
-        ("yarn.lock", "yarn install --frozen-lockfile"),
-        ("package-lock.json", "npm ci"),
-        ("uv.lock", "uv sync --frozen"),
-        ("poetry.lock", "poetry install --no-interaction"),
-        ("requirements.txt", f'"{sys.executable}" -m pip install -r requirements.txt'),
-    ):
-        if (workdir / marker).exists():
-            command = candidate
-            break
+    command = _dependency_install_command(workdir)
+    discovery = "configured" if step.params.get("working_directory") else "repository_root"
+    package_root = workdir
     if command is None:
-        return ExecutorStepResult(step.executor_id, "passed", "repository has no dependency installation step", {"working_directory": str(workdir), "installed": False})
-    inferred = replace(step, params={**step.params, "command": command})
-    return _ci_run_command(step=inferred, ctx=ctx, command_kind="dependency_install", default_timeout=1200)
+        if step.params.get("working_directory"):
+            return ExecutorStepResult(step.executor_id, "passed", "configured package directory has no dependency installation step", {"working_directory": str(workdir), "installed": False, "discovery": discovery})
+        nested = _nested_dependency_roots(workdir)
+        if not nested:
+            return ExecutorStepResult(step.executor_id, "passed", "repository has no dependency installation step", {"working_directory": str(workdir), "installed": False, "discovery": "none"})
+        if len(nested) > 1:
+            return ExecutorStepResult(
+                step.executor_id,
+                "failed",
+                "multiple nested dependency roots found; configure package.install_dependencies working_directory",
+                {"working_directory": str(workdir), "dependency_roots": [str(path.relative_to(workdir)) for path, _ in nested], "installed": False},
+            )
+        package_root, command = nested[0]
+        discovery = "nested_unique"
+
+    params = {**step.params, "command": command}
+    if package_root != workdir:
+        try:
+            params["working_directory"] = package_root.relative_to(ctx.workspace_root.resolve()).as_posix()
+        except ValueError:
+            return ExecutorStepResult(step.executor_id, "error", "discovered dependency root escapes the runtime workspace")
+    result = _ci_run_command(step=replace(step, params=params), ctx=ctx, command_kind="dependency_install", default_timeout=1200)
+    return replace(result, evidence={**result.evidence, "dependency_root": str(package_root), "discovery": discovery})
 
 
 def _workspace_clone_repositories(*, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None) -> ExecutorStepResult:
