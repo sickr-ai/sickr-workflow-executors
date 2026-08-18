@@ -698,6 +698,67 @@
     },
     {
       "schema_version": "sickr.executor_manifest.v1",
+      "id": "git.install_push_guard",
+      "executor_contract_version": 1,
+      "domain_id": "software-engineering",
+      "category": "Setup",
+      "kind": "action",
+      "supported_phases": [
+        "preflight"
+      ],
+      "parameter_schema": {
+        "type": "object",
+        "required": [
+          "protected_branches"
+        ],
+        "properties": {
+          "protected_branches": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "working_directory": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "protected_branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hook_path": {
+            "type": "string"
+          }
+        }
+      },
+      "default_timeout_seconds": 30,
+      "risk": {
+        "mutating": true,
+        "level": "low",
+        "requires_workspace": true
+      },
+      "source": {
+        "source": "sickr_default",
+        "path": "builtin://executors/git.install_push_guard"
+      },
+      "requires": {
+        "connections": [],
+        "tools": [
+          "git"
+        ]
+      }
+    },
+    {
+      "schema_version": "sickr.executor_manifest.v1",
       "id": "git.sync_with_base",
       "executor_contract_version": 1,
       "domain_id": "software-engineering",

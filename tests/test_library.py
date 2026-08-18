@@ -14,6 +14,7 @@ from sickr_workflow_executors.workflow_executor_steps import (
     DEFAULT_STEP_EXECUTORS,
     GitStepResult,
     _github_repository_access_failure,
+    _render_push_guard,
 )
 
 
@@ -46,3 +47,10 @@ def test_github_repository_access_failure_is_actionable_only_for_access_errors()
     assert not _github_repository_access_failure(
         GitStepResult(128, "", "fatal: unable to access repository: connection timed out")
     )
+
+
+def test_push_guard_is_driven_by_configured_branches() -> None:
+    hook = _render_push_guard(["main", "release/production"])
+    assert "refs/heads/main|refs/heads/release/production" in hook
+    assert "refs/heads/staging" not in hook
+    assert "configured promotion process" in hook

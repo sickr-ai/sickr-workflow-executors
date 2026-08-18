@@ -17,6 +17,7 @@ import fnmatch
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -1760,6 +1761,63 @@ def _workspace_capture_generated_ignores(*, step: ExecutorStep, ctx: ExecutorCon
             stream.write("# SICKR Setup-generated workspace artifacts\n")
             stream.write("\n".join(additions) + "\n")
     return ExecutorStepResult(step.executor_id, "passed", "captured setup-generated local ignores", {"excluded_paths": paths, "exclude_file": str(exclude_file)})
+
+
+def _render_push_guard(protected_branches: Sequence[str]) -> str:
+    """Render a portable pre-push hook for an authored branch policy."""
+    protected_refs = "|".join(shlex.quote(f"refs/heads/{branch}") for branch in protected_branches)
+    return f"""#!/usr/bin/env sh
+set -eu
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    {protected_refs})
+      echo >&2 "SICKR workspace policy blocks direct pushes to ${{remote_ref#refs/heads/}}."
+      echo >&2 "Push the ticket branch and use the configured promotion process."
+      exit 1
+      ;;
+  esac
+done
+"""
+
+
+def _git_install_push_guard(*, step: ExecutorStep, ctx: ExecutorContext, actor_result: dict[str, Any] | None) -> ExecutorStepResult:
+    """Install a workspace-local push guard from configuration, not state names."""
+    workdir = _ci_working_directory(ctx, step.params.get("working_directory"))
+    if workdir is None or not workdir.is_dir():
+        return ExecutorStepResult(step.executor_id, "error", "git.install_push_guard requires a repository workspace")
+    raw_branches = step.params.get("protected_branches")
+    if not isinstance(raw_branches, list) or not raw_branches:
+        return ExecutorStepResult(step.executor_id, "error", "git.install_push_guard requires protected_branches")
+    branches: list[str] = []
+    for raw in raw_branches:
+        branch = str(raw).strip() if isinstance(raw, str) else ""
+        if not branch or branch in branches:
+            return ExecutorStepResult(step.executor_id, "error", "protected_branches must contain unique non-empty branch names")
+        valid = _git_step(["check-ref-format", "--branch", branch], cwd=workdir, env=ctx.env, timeout=30)
+        if valid.returncode != 0:
+            return ExecutorStepResult(step.executor_id, "error", f"invalid protected branch: {branch}")
+        branches.append(branch)
+    git_dir_result = _git_step(["rev-parse", "--absolute-git-dir"], cwd=workdir, env=ctx.env, timeout=30)
+    if git_dir_result.returncode != 0:
+        return ExecutorStepResult(step.executor_id, "error", "git.install_push_guard could not resolve the Git directory", git_dir_result.evidence("git_dir"))
+    hooks_dir = Path(git_dir_result.stdout.strip()) / "sickr-hooks"
+    hook_path = hooks_dir / "pre-push"
+    try:
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+        hook_path.write_text(_render_push_guard(branches), encoding="utf-8", newline="\n")
+        hook_path.chmod(0o755)
+    except OSError as exc:
+        return ExecutorStepResult(step.executor_id, "error", f"git.install_push_guard could not write the hook: {exc}")
+    configured = _git_step(["config", "--local", "core.hooksPath", hooks_dir.as_posix()], cwd=workdir, env=ctx.env, timeout=30)
+    if configured.returncode != 0:
+        return ExecutorStepResult(step.executor_id, "error", "git.install_push_guard could not activate the hook", configured.evidence("git_config"))
+    return ExecutorStepResult(
+        step.executor_id,
+        "passed",
+        "installed workspace push guard",
+        {"protected_branches": branches, "hook_path": str(hook_path)},
+    )
 
 
 def _porcelain_paths_z(output: str) -> list[str]:
@@ -4089,6 +4147,7 @@ DEFAULT_STEP_EXECUTORS: dict[str, StepExecutor] = {
     "workspace.clone_repositories": _workspace_clone_repositories,
     "validation.run_baseline": _validation_run_baseline,
     "workspace.capture_generated_ignores": _workspace_capture_generated_ignores,
+    "git.install_push_guard": _git_install_push_guard,
     "integration.dispatch": _integration_dispatch,
     "github.publish_and_ensure_pr": _github_publish_and_ensure_pr,
     "github.prepare_pr_workspace": _github_prepare_pr_workspace,
