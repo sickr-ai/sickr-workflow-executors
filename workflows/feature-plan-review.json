@@ -1,0 +1,20 @@
+{
+  "name": "Feature plan review",
+  "description": "Feature planning followed by plan review.",
+  "visibility": "private",
+  "graph": {
+    "nodes": [
+      { "id": "START", "label": "Start", "kind": "start" },
+      { "id": "WORK", "label": "Plan feature", "kind": "normal", "state_role_id": "sickr_planning", "runner_role": "planning" },
+      { "id": "CHECK", "label": "Review plan", "kind": "normal", "state_role_id": "sickr_review", "runner_role": "review" },
+      { "id": "DONE", "label": "Done", "kind": "terminal" },
+      { "id": "ESCALATION", "label": "Escalation", "kind": "sink" },
+      { "id": "ERROR_HOLD", "label": "Error hold", "kind": "sink" }
+    ],
+    "edges": [
+      { "id": "start_work", "from": "START", "to": "WORK", "outcome": "success" },
+      { "id": "work_check", "from": "WORK", "to": "CHECK", "outcome": "success" },
+      { "id": "check_done", "from": "CHECK", "to": "DONE", "outcome": "success" }
+    ]
+  }
+}

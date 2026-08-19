@@ -1,0 +1,20 @@
+{
+  "name": "Bug fix and validation",
+  "description": "Bug fixing followed by deterministic validation.",
+  "visibility": "private",
+  "graph": {
+    "nodes": [
+      { "id": "START", "label": "Start", "kind": "start" },
+      { "id": "WORK", "label": "Fix bug", "kind": "normal", "state_role_id": "sickr_implementation", "runner_role": "implementation" },
+      { "id": "CHECK", "label": "Validate", "kind": "normal", "state_role_id": "sickr_evaluation", "runner_role": "evaluation" },
+      { "id": "DONE", "label": "Done", "kind": "terminal" },
+      { "id": "ESCALATION", "label": "Escalation", "kind": "sink" },
+      { "id": "ERROR_HOLD", "label": "Error hold", "kind": "sink" }
+    ],
+    "edges": [
+      { "id": "start_work", "from": "START", "to": "WORK", "outcome": "success" },
+      { "id": "work_check", "from": "WORK", "to": "CHECK", "outcome": "success" },
+      { "id": "check_done", "from": "CHECK", "to": "DONE", "outcome": "success" }
+    ]
+  }
+}
