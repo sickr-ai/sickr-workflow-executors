@@ -1,0 +1,4 @@
+{
+  "schema_version": "sickr.platform_config_executor_library_ref.v1",
+  "manifest_path": "manifests/builtin-executors.v1.json"
+}

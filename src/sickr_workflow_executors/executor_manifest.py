@@ -18,7 +18,7 @@ from typing import Any, Iterable, Literal, Mapping
 EXECUTOR_MANIFEST_SCHEMA_VERSION = "sickr.executor_manifest.v1"
 BUILTIN_EXECUTOR_FIXTURE_SCHEMA_VERSION = "sickr.builtin_executor_manifest.v1"
 EXPECTED_BUILTIN_EXECUTOR_FIXTURE_SHA256 = (
-    "30588e841495f4f920523bfd6dfab783a85e32d67f10a0f5a6af50f5a620c078"
+    "25e6d9d8f04137a0582f0b534f39dc870e8e82096fbbec649f533f61104ffbb3"
 )
 
 ExecutorPhase = Literal["preflight", "main", "postflight"]
@@ -815,6 +815,40 @@ BUILTIN_EXECUTOR_MANIFESTS = build_executor_manifest_registry(
             risk_level="low",
             requires_workspace=True,
             source_path="builtin://executors/workspace.capture_generated_ignores",
+            requires={"connections": [], "tools": ["git"]},
+        ),
+        ExecutorManifestDescriptor(
+            id="git.install_push_guard",
+            executor_contract_version=1,
+            domain_id="software-engineering",
+            category="Setup",
+            kind="action",
+            supported_phases=("preflight",),
+            parameter_schema={
+                "type": "object",
+                "required": ["protected_branches"],
+                "properties": {
+                    "protected_branches": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": True,
+                        "items": {"type": "string", "minLength": 1},
+                    },
+                    "working_directory": {"type": "string"},
+                },
+            },
+            output_schema={
+                "type": "object",
+                "properties": {
+                    "protected_branches": {"type": "array", "items": {"type": "string"}},
+                    "hook_path": {"type": "string"},
+                },
+            },
+            default_timeout_seconds=30,
+            mutating=True,
+            risk_level="low",
+            requires_workspace=True,
+            source_path="builtin://executors/git.install_push_guard",
             requires={"connections": [], "tools": ["git"]},
         ),
         ExecutorManifestDescriptor(
