@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 def test_platform_pack_uses_fixed_folders_and_resolves_every_artifact():
     pack = json.loads((ROOT / "platform-pack.json").read_text(encoding="utf-8"))
     assert pack["schema_version"] == "sickr.platform_config_pack.v1"
-    assert pack["stable"] is False
+    assert pack["stable"] is True
     folder_for_kind = {
         "executor_library": "executors",
         "skill": "skills",
