@@ -3,12 +3,12 @@
   "pack_id": "sickr/starter",
   "name": "SICKR Starter Pack",
   "version": "0.1.0",
-  "stable": false,
+  "stable": true,
   "publisher": { "namespace": "sickr", "name": "SICKR" },
   "artifacts": [
     { "kind": "executor_library", "key": "builtin", "version": "1", "stable": true, "path": "executors/builtin.json" },
-    { "kind": "workflow", "key": "implementation_review", "version": "1", "stable": false, "path": "workflows/implementation-review.json" },
-    { "kind": "workflow", "key": "feature_plan_review", "version": "1", "stable": false, "path": "workflows/feature-plan-review.json" },
-    { "kind": "workflow", "key": "bug_fix_validation", "version": "1", "stable": false, "path": "workflows/bug-fix-validation.json" }
+    { "kind": "workflow", "key": "implementation_review", "version": "1", "stable": true, "path": "workflows/implementation-review.json" },
+    { "kind": "workflow", "key": "feature_plan_review", "version": "1", "stable": true, "path": "workflows/feature-plan-review.json" },
+    { "kind": "workflow", "key": "bug_fix_validation", "version": "1", "stable": true, "path": "workflows/bug-fix-validation.json" }
   ]
 }
